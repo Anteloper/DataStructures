@@ -105,7 +105,7 @@ void Stack<T>::copyStack(const Stack<T> &listToCopy){//BEGIN Function CopyList
 
 template <typename T>
 void Stack<T>::push(T& e){
-    Node<T> *newHead = new Node<LL<Term>>(e, head);
+    Node<T> *newHead = new Node<T>(e, head);
     head = newHead;
 }
 
