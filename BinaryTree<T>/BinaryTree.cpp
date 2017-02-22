@@ -7,64 +7,22 @@
 //
 
 
-#include <stdio.h>
-#include <iostream>
-#include <string>
-#include <fstream>
-#include <vector>
-#include <sstream>
-
-#ifndef BinaryTree_h
-#define BinaryTree_h
-
-using namespace std;
+#include "BinaryTree.h"
 
 
 template <typename T>
-struct Node{
-    T data;
-    Node *left;
-    Node *right;
-};
-
-template <typename T>
-class BinaryTree{
-    
-private:
-    Node<T> *root;
-    int nodeCount;
-    void insert(T element, Node<T>* &node);
-    bool find(T element, Node<T>* node);
-    Node<T> *nodeFind(T element, Node<T> *node);
-    int nodeHeight(Node<T> *node);
-    void printInOrder(Node<T> *node);
-    void printPreOrder(Node<T> *node);
-    void printPostOrder(Node<T> *node);
-    void deleteAll(Node<T> *node);
-    Node<T> *deleteNode(Node<T> *node, T element);
-    
-public:
-    BinaryTree<T>(){root = NULL; nodeCount = 0;}
-    int count(){return nodeCount;}
-    void insert(T element);
-    int height(){ return nodeHeight(root);}
-    int height(T element){ return nodeHeight(nodeFind(element, root)); }
-    bool find(T element){return find(element, root);}
-    void printInOrder(){if(root != NULL) printInOrder(root);}
-    void printPostOrder(){if(root != NULL) printPostOrder(root);}
-    void printPreOrder(){if(root != NULL) printPreOrder(root);}
-    void deleteAll(){deleteAll(root); root = NULL; nodeCount = 0;}
-    void Delete(T element){deleteNode(nodeFind(element, root), element);}
-    void load(string fileName);
-    ~BinaryTree(){deleteAll(root);}
-};
-
+BinaryTree<T> BinaryTree<T>::operator =(const BinaryTree<T> &rhsObj){
+    if(this != &rhsObj){
+        this->root = deepCopy(rhsObj.root);
+    }
+    return *this;
+}
 
 
 //PRIVATE HEIGHT
 template <typename T>
-int BinaryTree<T>::nodeHeight(Node<T> *node){
-    if(node == NULL)
+int BinaryTree<T>::nodeHeight(Node<T> *node) const{
+    if(node == nullptr)
         return -1;
     else
         return std::max(nodeHeight(node->left), nodeHeight(node->right)) + 1;
@@ -73,9 +31,9 @@ int BinaryTree<T>::nodeHeight(Node<T> *node){
 
 //PRIVATE NODE FIND
 template <typename T>
-Node<T> *BinaryTree<T>::nodeFind(T element, Node<T> *node)
-{
-    if(node!=NULL)
+Node<T> *BinaryTree<T>::nodeFind(T element, Node<T> *node) const{
+
+    if(node!=nullptr)
     {
         if(element==node->data)
             return node;
@@ -84,14 +42,15 @@ Node<T> *BinaryTree<T>::nodeFind(T element, Node<T> *node)
         else
             return nodeFind(element, node->right);
     }
-    else return NULL;
+    else
+        return nullptr;
 }
 
 
 //PRIVATE FIND
 template <typename T>
-bool BinaryTree<T>::find(T element, Node<T>* node){
-    if(node!=NULL){
+bool BinaryTree<T>::find(T element, Node<T>* node) const{
+    if(node!=nullptr){
         if(element==node->data)
             return true;
         if(element<node->data)
@@ -106,14 +65,14 @@ bool BinaryTree<T>::find(T element, Node<T>* node){
 //PRIVATE INSERT
 template <typename T>
 void BinaryTree<T>::insert(T element, Node<T>* &node){
-    if(node != NULL)
+    if(node != nullptr)
         insert(element, (element > node->data ? node->right : node->left));
     
-    if(node == NULL){
+    if(node == nullptr){
         Node<T> *next = new Node<T>;
         next->data = element;
-        next->left = NULL;
-        next->right = NULL;
+        next->left = nullptr;
+        next->right = nullptr;
         node = next;
     }
 }
@@ -121,114 +80,119 @@ void BinaryTree<T>::insert(T element, Node<T>* &node){
 //PUBLIC INSERT
 template <typename T>
 void BinaryTree<T>::insert(T element){
-    if(root == NULL){
+    if(root == nullptr){
         root = new Node<T>;
         root->data = element;
-        root->left = NULL;
-        root->right = NULL;
+        root->left = nullptr;
+        root->right = nullptr;
     }
     
     else{
         if(find(element))
-            cout << "Duplicate value entered, no insertion cancelled";
+            std::cout<< "Warning, duplicate value, ignoring\n\n";
         else
             insert(element, root);
     }
     nodeCount++;
 }
 
+
+
+//PUBLIC REMOVE
+template<typename T>
+void BinaryTree<T>::remove(T element){
+    Node<T> *node;
+    node = nodeFind(element, root);
+    remove(node, element);
+}
+
+//PRIVATE REMOVE
+template <typename T>
+void BinaryTree<T>::remove(Node<T> *&node, T element){
+    if(node != nullptr) return;
+    if(node->data < element)
+        remove(node->left, element);
+    else if(node->data > element)
+        remove(node->right, element);
+    else if(node->left != nullptr && node->right != nullptr){
+        Node<T> *temp = node->right;
+        node->data = findMin(temp);
+        remove(node->right, element);
+    }
+    else{
+        Node<T> *temp = node;
+        temp = node->left == nullptr ? node->right : node->left;
+    }
+}
+
+//PRIVATE REMOVE ALL
+template<typename T>
+void BinaryTree<T>::removeAll(Node<T> *node){
+    
+    if(node != nullptr){
+        removeAll(node->left);
+        removeAll(node->right);
+        delete node;
+    }
+    nodeCount = 0;
+}
+
+
+
+//PRIVATE DEEP COPY
+//Returns the root of a newly allocated tree, identical to the subtree of the Node passed in
+template <typename T>
+Node<T> *BinaryTree<T>::deepCopy(Node<T> *root){
+    if(root == nullptr)
+        return nullptr;
+    else{
+        Node<T> *next = new Node<T>;
+        next->data = root->data;
+        next->left = deepCopy(root->left);
+        next->right = deepCopy(root->right);
+    }
+    return root;
+}
+
 //INORDER PRINT
 template <typename T>
-void BinaryTree<T>::printInOrder(Node<T> *node){
-    if(node->left != NULL)
-        printInOrder(node->left);
+void BinaryTree<T>::printInOrder(Node<T> *node, std::ostream &os) const{
+    if(node->left != nullptr)
+        printInOrder(node->left, os);
     
-    cout << node->data << "\n";
+    os<< node->data << ", ";
     
-    if(node->right != NULL)
-        printInOrder(node->right);
+    if(node->right != nullptr)
+        printInOrder(node->right, os);
     
 }
 
+
 //POST ORDER PRINT
 template <typename T>
-void BinaryTree<T>::printPostOrder(Node<T> *node){
-    if(node->left != NULL)
-        printInOrder(node->left);
+void BinaryTree<T>::printPostOrder(Node<T> *node, std::ostream &os) const{
+    if(node->left != nullptr)
+        printInOrder(node->left, os);
     
-    if(node->right != NULL)
-        printInOrder(node->right);
+    if(node->right != nullptr)
+        printInOrder(node->right, os);
     
-    cout << node->data << "\n";
+    os<< node->data << ", ";
 }
 
 
 //PRE ORDER PRINT
 template <typename T>
-void BinaryTree<T>::printPreOrder(Node<T> *node){
-    cout << node->data << "\n";
+void BinaryTree<T>::printPreOrder(Node<T> *node, std::ostream &os) const{
+    os<< node->data << ", ";
     
-    if(node->left != NULL)
-        printInOrder(node->left);
+    if(node->left != nullptr)
+        printInOrder(node->left, os);
     
-    
-    if(node->right != NULL)
-        printInOrder(node->right);
+    if(node->right != nullptr)
+        printInOrder(node->right, os);
     
 }
 
-//PRIVATE DELETE ALL
-template<typename T>
-void BinaryTree<T>::deleteAll(Node<T> *node){
-    if(node != NULL){
-        deleteAll(node->left);
-        deleteAll(node->right);
-        delete node;
-    }
-}
 
 
-//PRIVATE DELETENODE
-template <typename T>
-Node<T> *BinaryTree<T>::deleteNode(Node<T> *node, T element){
-    if(node == NULL)
-        return node;
-    else if(element < node->data)
-        node->left = deleteNode(node->left,element);
-    else if(element > node->data)
-        node->right = deleteNode(node->right, element);
-    
-    else {
-        //IF NO CHILD NODES EXIST
-        if(node->left == NULL && node->right == NULL){
-            delete node;
-            node = NULL;
-            
-            
-        //IF ONLY LEFT CHILD EXISTS
-        } else if(node->left == NULL){
-            Node<T> *temp = node;
-            node = node->right;
-            delete temp;
-        //IF ONLY RIGHT CHILD EXISTS
-        } else if(node->right == NULL){
-            Node<T> *temp = node;
-            node = node->left;
-            delete temp;
-            
-            
-        //BOTH CHILDREN EXIST
-        } else{
-            Node<T> *temp = node->right;
-            
-            while(temp->left != NULL){
-                temp = temp->left;
-            }
-            node->data = temp->data;
-            node->right = deleteNode(node->right, temp->data);
-        }
-    }
-    return node;
-}
-
-#endif
