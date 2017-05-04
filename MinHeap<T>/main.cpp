@@ -8,7 +8,7 @@
 
 #include <iostream>
 #include <iomanip>
-#include "MinHeap.h"
+#include "MinHeap.cpp"
 
 char displayMenu();
 
@@ -47,7 +47,7 @@ int main(int argc, const char * argv[]) {
                 std::cout << "Invalid Entry, try again\n";
         }
     }
-
+    
 }
 
 char displayMenu(){
