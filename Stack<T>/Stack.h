@@ -1,6 +1,6 @@
 //
-//  Stack.hpp
-//  Homework1
+//  Stack.h
+//  
 //
 //  Created by Oliver Hill on 9/27/16.
 //  Copyright © 2016 Oliver Hill. All rights reserved.
